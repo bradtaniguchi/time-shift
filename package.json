@@ -16,10 +16,30 @@
   "contributes": {
     "commands": [
       {
-        "command": "time-shift.helloWorld",
-        "title": "Hello World"
+        "command": "time-shift.enable",
+        "title": "Enable time-shift"
+      },
+      {
+        "command": "time-shift.disable",
+        "title": "Disable time-shift"
       }
-    ]
+    ],
+    "configuration": {
+      "title": "time-shift",
+      "properties": {
+        "time-shift.noEnable": {
+          "type": "boolean",
+          "default": false,
+          "description": "If we are to skip auto-enabling time-shift"
+        },
+        "time-shift.throttle": {
+          "type": "number",
+          "default": 5000,
+          "minimum": 1000,
+          "description": "How often to throttle writes and updates in milliseconds"
+        }
+      }
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run package",
