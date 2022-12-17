@@ -10,7 +10,10 @@ on:
 jobs:
   lint-test-build:
     name: lint and test
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
 
     steps:
       - name: checkout repo
@@ -24,8 +27,12 @@ jobs:
       - name: install deps
         run: npm ci
 
+      - run: xvfb-run -a npm test
+        if: runner.os == 'Linux'
+
       - name: lint
         run: npm run lint
 
       - name: test
+        if: runner.os != 'Linux'
         run: npm run test
