@@ -31,9 +31,12 @@
     "pretest": "npm run compile-tests && npm run compile && npm run lint",
     "lint": "eslint src --ext ts",
     "test": "node ./out/test/runTest.js",
-    "clean": "npx rimraf dist"
+    "clean": "npx rimraf dist",
+    "prepare": "husky install"
   },
   "devDependencies": {
+    "@commitlint/cli": "^17.3.0",
+    "@commitlint/config-conventional": "^17.3.0",
     "@types/glob": "^8.0.0",
     "@types/mocha": "^10.0.1",
     "@types/node": "16.x",
@@ -43,6 +46,7 @@
     "@vscode/test-electron": "^2.2.0",
     "eslint": "^8.28.0",
     "glob": "^8.0.3",
+    "husky": "^8.0.0",
     "mocha": "^10.1.0",
     "rimraf": "^3.0.2",
     "ts-loader": "^9.4.1",
