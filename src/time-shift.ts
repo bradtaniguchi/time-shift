@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { ExtensionConfig } from './config/extension-config';
 import { COMMANDS } from './constants/commands';
 
 /**
@@ -37,12 +38,9 @@ export class TimeShift {
   private readonly params: TimeShiftParams;
 
   /**
-   * The configuration for this extension.
-   * Can be manipulated by the user
-   *
-   * TODO: make own interface
+   * The configuration as pared by extension-config.ts
    */
-  private config: { throttle: number };
+  private config: ExtensionConfig;
 
   /**
    * List of disposables that are added/removed on enable and disable.
@@ -52,20 +50,13 @@ export class TimeShift {
   constructor(params: TimeShiftParams) {
     const { noRegister } = params;
     this.params = params;
-    this.config = this.getConfig();
+    this.config = new ExtensionConfig();
 
     this.logMeta();
 
     if (!noRegister) {
       this.registerCommands();
     }
-  }
-
-  private getConfig(): { throttle: number } {
-    return {
-      throttle:
-        vscode.workspace.getConfiguration('time-shift').get('throttle') ?? 1000,
-    };
   }
 
   /**
@@ -129,7 +120,6 @@ export class TimeShift {
       this,
       this.disposables
     );
-    return this;
   }
 
   /**
@@ -138,15 +128,13 @@ export class TimeShift {
    * Used to update the config of this extension
    */
   private handleDidChangeConfiguration() {
-    this.config = this.getConfig();
+    this.config = new ExtensionConfig();
   }
 
   /**
    * Handles when a text document is opened.
    *
    * This will start tracking time spent in the file.
-   *
-   * TODO: add tracking logic
    */
   private handleDidOpenTextDocument(textDoc: vscode.TextDocument) {
     const { languageId, uri } = textDoc;
@@ -156,8 +144,6 @@ export class TimeShift {
       uri: uri.fragment,
       url: uri.toJSON(),
     });
-
-    return this;
   }
 
   /**
@@ -174,8 +160,6 @@ export class TimeShift {
     console.log('[TimeShift][handleDidCloseTextDocument] called', {
       languageId,
     });
-
-    return this;
   }
 
   /**
@@ -190,7 +174,5 @@ export class TimeShift {
 
     this.disposables.forEach((disposable) => disposable.dispose());
     this.disposables = [];
-
-    return this;
   }
 }
