@@ -25,11 +25,16 @@ export class ExtensionConfig {
    */
   readonly trackerConfigs: TrackerConfig[];
 
+  /**
+   * Lookup map of all the tracker configs by id.
+   */
+  readonly trackerConfigsMap: Map<TrackerConfig['id'], TrackerConfig>;
+
   constructor() {
     this.throttle = this.timeShiftConfig.get('throttle') ?? 1000;
-    this.trackerConfigs = this.getTrackerConfigs();
-
-    // TODO: create actual trackers
+    const { trackerConfigs, trackerConfigsMap } = this.parseTrackerConfigs();
+    this.trackerConfigs = trackerConfigs;
+    this.trackerConfigsMap = trackerConfigsMap;
   }
 
   private get timeShiftConfig() {
@@ -41,8 +46,12 @@ export class ExtensionConfig {
    *
    * TODO: verify if throwing here is valid
    */
-  private getTrackerConfigs(): TrackerConfig[] {
+  private parseTrackerConfigs(): {
+    trackerConfigs: TrackerConfig[];
+    trackerConfigsMap: Map<TrackerConfig['id'], TrackerConfig>;
+  } {
     const trackerConfigs = this.timeShiftConfig.get('trackers');
+    const trackerConfigsMap = new Map<TrackerConfig['id'], TrackerConfig>();
     if (!Array.isArray(trackerConfigs)) {
       throw new ExtensionConfigError('.trackers is not an array');
     }
@@ -56,7 +65,15 @@ export class ExtensionConfig {
         )}`
       );
     }
+    for (const trackerConfig of trackerConfigs) {
+      if (trackerConfigsMap.has(trackerConfig.id)) {
+        throw new ExtensionConfigError(
+          `Duplicate tracker id found: ${trackerConfig.id}`
+        );
+      }
+      trackerConfigsMap.set(trackerConfig.id, trackerConfig);
+    }
 
-    return trackerConfigs;
+    return { trackerConfigs, trackerConfigsMap };
   }
 }

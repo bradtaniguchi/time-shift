@@ -1,6 +1,8 @@
 import * as vscode from 'vscode';
 import { ExtensionConfig } from './config/extension-config';
 import { COMMANDS } from './constants/commands';
+import { Tracker } from './tracker/tracker';
+import { TrackerFactory } from './tracker/tracker-factory';
 
 /**
  * Configuration params for the TimeShift class.
@@ -47,6 +49,11 @@ export class TimeShift {
    */
   private disposables: vscode.Disposable[] = [];
 
+  /**
+   * The current tracker classes.
+   */
+  private trackers: Tracker[];
+
   constructor(params: TimeShiftParams) {
     const { noRegister } = params;
     this.params = params;
@@ -57,6 +64,10 @@ export class TimeShift {
     if (!noRegister) {
       this.registerCommands();
     }
+
+    this.trackers = this.config.trackerConfigs.map((trackerConfig) =>
+      new TrackerFactory().create(trackerConfig)
+    );
   }
 
   /**
@@ -129,6 +140,15 @@ export class TimeShift {
    */
   private handleDidChangeConfiguration() {
     this.config = new ExtensionConfig();
+
+    for (const tracker of this.trackers) {
+      const trackerConfig = this.config.trackerConfigsMap.get(tracker.id);
+      tracker.onConfigurationChanged(trackerConfig);
+
+      if (!trackerConfig) {
+        // TODO: cleanup the trackers
+      }
+    }
   }
 
   /**
@@ -144,6 +164,10 @@ export class TimeShift {
       uri: uri.fragment,
       url: uri.toJSON(),
     });
+
+    for (const tracker of this.trackers) {
+      tracker.onOpen(textDoc);
+    }
   }
 
   /**
@@ -160,6 +184,10 @@ export class TimeShift {
     console.log('[TimeShift][handleDidCloseTextDocument] called', {
       languageId,
     });
+
+    for (const tracker of this.trackers) {
+      tracker.onClosed(textDoc);
+    }
   }
 
   /**
@@ -171,6 +199,10 @@ export class TimeShift {
     console.log('[TimeShift][disable] called');
 
     vscode.window.showInformationMessage('time-shift disabled!');
+
+    for (const tracker of this.trackers) {
+      tracker.onDisable();
+    }
 
     this.disposables.forEach((disposable) => disposable.dispose());
     this.disposables = [];

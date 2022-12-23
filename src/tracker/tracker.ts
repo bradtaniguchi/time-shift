@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { ExtensionConfig } from '../config/extension-config';
 import { TrackerConfig } from '../config/tracker-config';
 import { SegmentationType } from './segmentation-type';
 
@@ -36,7 +37,18 @@ export interface Tracker extends TrackerConfig {
    * This internally will run migration logic if the configuration
    * for this tracker changed.
    */
-  onConfigurationChanged(): void;
+  onConfigurationChanged(newConfig?: TrackerConfig): void;
+  // TODO: add on-delete and on-create files, as these might be required to
+  // cleanup tracking events
+
+  /**
+   * Method that is called on each "tick". All trackers need to follow
+   * the same "tick", usually its on a second basis.
+   *
+   * Each tracker will then be responsible to update their
+   * data async when possible.
+   */
+  onTick(): void;
 }
 
 /**
