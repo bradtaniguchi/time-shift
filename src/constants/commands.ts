@@ -8,6 +8,7 @@
 export const COMMANDS = {
   ENABLE: 'time-shift.enable',
   DISABLE: 'time-shift.disable',
+  STATS: 'time-shift.stats',
 } as const;
 
 /**

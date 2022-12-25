@@ -22,6 +22,10 @@
       {
         "command": "time-shift.disable",
         "title": "Disable time-shift"
+      },
+      {
+        "command": "time-shift.stats",
+        "title": "Show current time-shift stats"
       }
     ],
     "configuration": {

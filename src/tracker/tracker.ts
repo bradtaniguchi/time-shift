@@ -49,6 +49,12 @@ export interface Tracker extends TrackerConfig {
    * data async when possible.
    */
   onTick(): void;
+
+  /**
+   * Method that is called when the user requests to see the stats for this
+   * tracker. Useful for debugging.
+   */
+  onStats(): void;
 }
 
 /**

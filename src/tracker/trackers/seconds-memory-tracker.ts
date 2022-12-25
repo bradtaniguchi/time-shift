@@ -55,6 +55,7 @@ export class SecondsMemoryTracker implements Tracker {
 
   onTick(): void {
     if (this.openedFiles.size > 0) {
+      // TODO: add to segmentation
       if (!SecondsMemoryTracker.memory[this.id]) {
         SecondsMemoryTracker.memory[this.id] = 1;
       }
@@ -70,5 +71,12 @@ export class SecondsMemoryTracker implements Tracker {
 
       delete SecondsMemoryTracker.memory[this.id];
     }
+  }
+
+  onStats(): void {
+    console.log(`[SecondsMemoryTracker][${this.id}]: stats`, {
+      // TODO add segmentation
+      value: SecondsMemoryTracker.memory[this.id],
+    });
   }
 }

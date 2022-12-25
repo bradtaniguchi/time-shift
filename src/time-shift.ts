@@ -100,6 +100,9 @@ export class TimeShift {
     context.subscriptions.push(
       vscode.commands.registerCommand(COMMANDS.DISABLE, this.disable.bind(this))
     );
+    context.subscriptions.push(
+      vscode.commands.registerCommand(COMMANDS.STATS, this.stats.bind(this))
+    );
     return this;
   }
 
@@ -206,5 +209,19 @@ export class TimeShift {
 
     this.disposables.forEach((disposable) => disposable.dispose());
     this.disposables = [];
+  }
+
+  /**
+   * Callback for the stats command.
+   *
+   * Shows the stats for the current session into the console.
+   * Useful for debugging
+   */
+  private stats() {
+    console.log('[TimeShift][stats] called');
+
+    for (const tracker of this.trackers) {
+      tracker.onStats();
+    }
   }
 }
