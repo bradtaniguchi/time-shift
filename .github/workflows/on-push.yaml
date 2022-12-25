@@ -36,3 +36,7 @@ jobs:
       - name: test
         if: runner.os != 'Linux'
         run: npm run test
+
+      - name: compile
+        if: runner.os != 'Linux'
+        run: npm run compile
