@@ -10,6 +10,10 @@ import { SegmentationType } from './segmentation-type';
  */
 export interface Tracker extends TrackerConfig {
   /**
+   * Method called when extension is enabled.
+   */
+  onEnable(textDocs: readonly vscode.TextDocument[]): void;
+  /**
    * Method that is called when a file is opened. This
    * should be used to update values for a given file.
    * @param textDoc the text document that was opened

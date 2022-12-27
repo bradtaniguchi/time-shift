@@ -35,6 +35,12 @@ export class SecondsMemoryTracker implements Tracker {
     this.seg = config.seg;
   }
 
+  onEnable(textDocs: readonly TextDocument[]): void {
+    for (const textDoc of textDocs) {
+      this.onOpen(textDoc);
+    }
+  }
+
   onOpen(textDoc: TextDocument): void {
     const { uri } = textDoc;
 

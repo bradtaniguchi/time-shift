@@ -57,9 +57,20 @@ export class TimeShift {
   /**
    * Ref for the timeout that is used to throttle the tracking.
    */
-  private timeoutRef?: NodeJS.Timeout;
+  private intervalRef?: NodeJS.Timeout;
 
-  // TODO: add tick counter.
+  /**
+   * The tick count for the current session.
+   *
+   * Is essentially stored "in-memory", and can be used for
+   * debugging.
+   */
+  private tickCount = 0;
+
+  /**
+   * If the extension is enabled.
+   */
+  private enabled?: boolean;
 
   constructor(params: TimeShiftParams) {
     const { noRegister } = params;
@@ -86,6 +97,7 @@ export class TimeShift {
       globalStorageUriPath: context.globalStorageUri.fsPath,
       localStorageUriPath: context.storageUri?.fsPath,
       config: this.config,
+      tickCount: this.tickCount,
     });
 
     return this;
@@ -121,11 +133,13 @@ export class TimeShift {
    */
   private enable() {
     console.log('[TimeShift][enable] called');
+    if (this.enabled) {
+      console.log('[TimeShift][enable] already enabled');
+      return;
+    }
     vscode.window.showInformationMessage('time-shift enabled!');
-    // write code to subscribe to file open events
-    // TODO: this might be moved to multiple class calls, so the act of
-    // actual tracking can be separated from the act of enabling the
-    // extension.
+
+    // TODO: add `vscode.workspace.textDocuments` for initial tracking
     vscode.workspace.onDidChangeConfiguration(
       this.handleDidChangeConfiguration,
       this,
@@ -141,16 +155,26 @@ export class TimeShift {
       this,
       this.disposables
     );
+    const textDocuments = vscode.workspace.textDocuments;
+    for (const tracker of this.trackers) {
+      tracker.onEnable(textDocuments);
+    }
 
-    this.timeoutRef = setTimeout(this.onTick.bind(this), this.config.throttle);
+    this.intervalRef = setInterval(
+      this.onTick.bind(this),
+      this.config.throttle
+    );
+    this.tickCount = 0;
+    this.enabled = true;
   }
 
   /**
-   * Handles when the configuration changes.
+   * Handles when the configuration changes. This clears previous ticks,
    *
    * Used to update the config of this extension
    */
   private handleDidChangeConfiguration() {
+    console.log('[TimeShift][handleDidChangeConfiguration] called');
     this.config = new ExtensionConfig();
 
     for (const tracker of this.trackers) {
@@ -160,8 +184,11 @@ export class TimeShift {
       if (!trackerConfig) {
         // TODO: cleanup the trackers
       }
-      // TODO: reset timeout.
-      this.timeoutRef = setTimeout(
+      if (this.intervalRef) {
+        clearInterval(this.intervalRef);
+      }
+      this.tickCount = 0;
+      this.intervalRef = setInterval(
         this.onTick.bind(this),
         this.config.throttle
       );
@@ -169,13 +196,14 @@ export class TimeShift {
   }
 
   /**
-   * Handles when a "tick" occurs according to the setTimeout.
-   *
-   * TODO: add tick counter.
+   * Handles when a "tick" occurs according to the setInterval.
    */
   private onTick() {
-    console.log('[TimeShift][tick] called');
-    // TODO: call onTick on trackers.
+    console.log(`[TimeShift][tick] called: ${this.tickCount}`);
+    for (const tracker of this.trackers) {
+      tracker.onTick();
+    }
+    this.tickCount += 1;
   }
 
   /**
@@ -194,7 +222,6 @@ export class TimeShift {
 
     for (const tracker of this.trackers) {
       tracker.onOpen(textDoc);
-      // TODO: handle tick?
     }
   }
 
@@ -215,7 +242,6 @@ export class TimeShift {
 
     for (const tracker of this.trackers) {
       tracker.onClosed(textDoc);
-      // TODO: handle tick?
     }
   }
 
@@ -236,7 +262,7 @@ export class TimeShift {
     this.disposables.forEach((disposable) => disposable.dispose());
     this.disposables = [];
 
-    clearTimeout(this.timeoutRef);
+    clearInterval(this.intervalRef);
   }
 
   /**
@@ -247,6 +273,8 @@ export class TimeShift {
    */
   private stats() {
     console.log('[TimeShift][stats] called');
+
+    this.logMeta();
 
     for (const tracker of this.trackers) {
       tracker.onStats();
