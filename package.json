@@ -10,7 +10,9 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:time-shift.helloWorld"
+    "onCommand:time-shift.enable",
+    "onCommand:time-shift.disable",
+    "onCommand:time-shift.stats"
   ],
   "main": "./dist/extension.js",
   "contributes": {

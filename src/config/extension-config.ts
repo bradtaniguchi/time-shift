@@ -52,6 +52,9 @@ export class ExtensionConfig {
   } {
     const trackerConfigs = this.timeShiftConfig.get('trackers');
     const trackerConfigsMap = new Map<TrackerConfig['id'], TrackerConfig>();
+    if (!trackerConfigs) {
+      return { trackerConfigs: [], trackerConfigsMap };
+    }
     if (!Array.isArray(trackerConfigs)) {
       throw new ExtensionConfigError('.trackers is not an array');
     }

@@ -54,6 +54,13 @@ export class TimeShift {
    */
   private trackers: Tracker[];
 
+  /**
+   * Ref for the timeout that is used to throttle the tracking.
+   */
+  private timeoutRef?: NodeJS.Timeout;
+
+  // TODO: add tick counter.
+
   constructor(params: TimeShiftParams) {
     const { noRegister } = params;
     this.params = params;
@@ -134,6 +141,8 @@ export class TimeShift {
       this,
       this.disposables
     );
+
+    this.timeoutRef = setTimeout(this.onTick.bind(this), this.config.throttle);
   }
 
   /**
@@ -151,7 +160,22 @@ export class TimeShift {
       if (!trackerConfig) {
         // TODO: cleanup the trackers
       }
+      // TODO: reset timeout.
+      this.timeoutRef = setTimeout(
+        this.onTick.bind(this),
+        this.config.throttle
+      );
     }
+  }
+
+  /**
+   * Handles when a "tick" occurs according to the setTimeout.
+   *
+   * TODO: add tick counter.
+   */
+  private onTick() {
+    console.log('[TimeShift][tick] called');
+    // TODO: call onTick on trackers.
   }
 
   /**
@@ -170,6 +194,7 @@ export class TimeShift {
 
     for (const tracker of this.trackers) {
       tracker.onOpen(textDoc);
+      // TODO: handle tick?
     }
   }
 
@@ -190,6 +215,7 @@ export class TimeShift {
 
     for (const tracker of this.trackers) {
       tracker.onClosed(textDoc);
+      // TODO: handle tick?
     }
   }
 
@@ -209,6 +235,8 @@ export class TimeShift {
 
     this.disposables.forEach((disposable) => disposable.dispose());
     this.disposables = [];
+
+    clearTimeout(this.timeoutRef);
   }
 
   /**
